@@ -1,0 +1,334 @@
+import { useEffect, useState } from "react";
+import styles from "./CrudModal.module.css";
+
+import {
+  Producto,
+  obtenerProductoPorId,
+  getImagenProducto,
+  actualizarProductoPorId,
+  subirImagenProducto,
+} from "../../../core/services/producto.service";
+
+import {
+  listarCategorias,
+  getImagenCategoria,
+} from "../../../core/services/categoria.service";
+
+import {
+  Marca,
+  listarMarcas,
+  getImagenMarca
+} from "../../../core/services/marca.service";
+
+type Props = {
+  id?: number;
+  type: "producto" | "categoria" | "marca";
+  onClose: () => void;
+};
+
+const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
+  // ── Modales internos ──────────────────────────────────────────
+  const [openModalCategoria, setOpenModalCategoria] = useState(false);
+  const [openModalMarca, setOpenModalMarca]         = useState(false);
+
+  // ── Listas desplegables ───────────────────────────────────────
+  const [imagenesCategoria, setImagenesCategoria] = useState<any[]>([]);
+  const [imagenesMarca, setImagenesMarca]         = useState<any[]>([]);
+
+  // ── Búsqueda ──────────────────────────────────────────────────
+  const [busquedaCategoria, setBusquedaCategoria] = useState("");
+  const [busquedaMarca, setBusquedaMarca]         = useState("");
+
+  // ── Archivo de imagen nuevo (para subir) ──────────────────────
+  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+
+  // ── Datos del producto ────────────────────────────────────────
+  const [producto, setProducto] = useState<Producto>({
+    prdcid: 0,
+    prdcimgnombre: "",
+    prdcimgnombrebucket: "",
+    prdcprecio: 0,
+    ctgraid: 0,
+    marcaid: 0,
+    categoria: null,
+    marca: null,
+  });
+
+  const esEdicion = !!id;
+  const [loading,   setLoading]   = useState(false);
+  const [guardando, setGuardando] = useState(false);
+
+  // ── Previews ──────────────────────────────────────────────────
+  const [previewProducto,  setPreviewProducto]  = useState<string | null>(null);
+  const [previewCategoria, setPreviewCategoria] = useState<string | null>(null);
+  const [previewMarca,     setPreviewMarca]     = useState<string | null>(null);
+
+  // ── Carga inicial ─────────────────────────────────────────────
+  useEffect(() => {
+    const cargar = async () => {
+      if (!id) return;
+      setLoading(true);
+
+      const data = await obtenerProductoPorId(id);
+      if (data) {
+        setProducto({
+          prdcid:                data.prdcid,
+          prdcimgnombre:         data.prdcimgnombre,
+          prdcimgnombrebucket:   data.prdcimgnombrebucket,
+          prdcprecio:            data.prdcprecio,
+          ctgraid:               data.ctgraid,
+          marcaid:               data.marcaid,
+          categoria:             data.categoria,
+          marca:                 data.marca,
+        });
+
+        setPreviewProducto(getImagenProducto(data.prdcimgnombrebucket));
+        setPreviewCategoria(getImagenCategoria(data.categoria?.ctgraimgnombrebucket ?? ""));
+        setPreviewMarca(getImagenMarca(data.marca?.marcaimgnombrebucket ?? ""));
+      }
+
+      setLoading(false);
+    };
+
+    cargar();
+  }, [id, type]);
+
+  // ── Handlers ──────────────────────────────────────────────────
+  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setArchivoImagen(file);
+    setPreviewProducto(URL.createObjectURL(file));
+  };
+
+  const handleListarCategorias = async () => {
+    // listarCategorias() no recibe parámetros según tu service
+    const data = await listarCategorias();
+    const mapped = data.map((c: any) => ({
+      id:     c.ctgraid,
+      nombre: c.ctgraimgnombre,
+      url:    getImagenCategoria(c.ctgraimgnombrebucket),
+    }));
+    setImagenesCategoria(mapped);
+    setOpenModalCategoria(true);
+  };
+
+  const handleListarMarcas = async () => {
+    const data = await listarMarcas(1, 500);
+    const mapped = data.map((m) => ({
+      id:     m.marcaid,
+      nombre: m.marcaimgnombre,
+      url:    getImagenMarca(m.marcaimgnombrebucket),
+    }));
+    setImagenesMarca(mapped);
+    setOpenModalMarca(true);
+  };
+
+  const handleActualizar = async () => {
+    if (!id) return;
+    setGuardando(true);
+
+    const resultado = await actualizarProductoPorId(
+      id,
+      {
+        prdcimgnombre:       producto.prdcimgnombre,
+        prdcprecio:          producto.prdcprecio,
+        ctgraid:             producto.ctgraid,
+        marcaid:             producto.marcaid,
+      },
+      archivoImagen ?? undefined   // nueva imagen solo si el usuario la cambió
+    );
+
+    setGuardando(false);
+
+    if (resultado) {
+      alert("Producto actualizado correctamente ✅");
+      onClose();
+    } else {
+      alert("Error al actualizar el producto ❌");
+    }
+  };
+
+  // ── Render ────────────────────────────────────────────────────
+  if (loading) return <p>Cargando...</p>;
+
+  return (
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+
+        {/* ── EDITAR PRODUCTO ── */}
+        {type === "producto" && esEdicion && (
+          <div>
+            <div className={styles.productoModal}>
+
+              {/* IZQUIERDA */}
+              <div className={styles.producto}>
+                <h2><b>Editar Producto</b></h2>
+
+                <p>Nombre del producto</p>
+                <input
+                  type="text"
+                  value={producto.prdcimgnombre ?? ""}
+                  onChange={(e) =>
+                    setProducto({ ...producto, prdcimgnombre: e.target.value })
+                  }
+                />
+
+                <label className={styles.btn}>
+                  Subir Imagen
+                  <input type="file" hidden onChange={handleImage} />
+                </label>
+
+                <div className={styles.mostrarImagen}>
+                  {previewProducto ? (
+                    <img src={previewProducto} alt="producto" />
+                  ) : (
+                    "Imagen previa"
+                  )}
+                </div>
+
+                <p>PRECIO:</p>
+                <input
+                  type="number"
+                  value={producto.prdcprecio}
+                  onChange={(e) =>
+                    setProducto({ ...producto, prdcprecio: Number(e.target.value) })
+                  }
+                />
+              </div>
+
+              {/* DERECHA */}
+              <div className={styles.CategoriaMarca}>
+                <p>CATEGORÍA:</p>
+                <button className={styles.btn} onClick={handleListarCategorias}>
+                  Listar categoría
+                </button>
+                <div className={styles.mostrarCajaCategoriaMarca}>
+                  {previewCategoria
+                    ? <img src={previewCategoria} alt="categoría" />
+                    : "Imagen categoría"}
+                </div>
+
+                <p>MARCA:</p>
+                <input type="text" no editable y que aparesca el  {marcaimgnombre} segun el nombre de la imagen  osea el nombre que esta en la imagen se ara una busqueda />
+                <button className={styles.btn} onClick={handleListarMarcas}>
+                  Listar marca
+                </button>
+                <div className={styles.mostrarCajaCategoriaMarca}>
+                  {previewMarca
+                    ? <img src={previewMarca} alt="marca" />
+                    : "Imagen marca"}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── AGREGAR PRODUCTO ── */}
+        {type === "producto" && !esEdicion && (
+          <h3>Momento de agregar un producto</h3>
+        )}
+
+        {/* ── BOTONES PRINCIPALES ── */}
+        <button onClick={onClose}>Cerrar</button>
+        <button onClick={handleActualizar} disabled={guardando}>
+          {guardando ? "Guardando..." : "Actualizar"}
+        </button>
+      </div>
+
+      {/* ── MODAL CATEGORÍAS ── */}
+      {openModalCategoria && (
+        <div
+          className={styles.ProductoModaCategoriaOverlay}
+          onClick={() => setOpenModalCategoria(false)}
+        >
+          <div
+            className={styles.ProductoModaCategoria}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Selecciona una categoría</h3>
+
+            <input
+              type="text"
+              placeholder="Buscar categoría..."
+              value={busquedaCategoria}
+              onChange={(e) => setBusquedaCategoria(e.target.value)}
+            />
+
+            <div className={styles.gridCategoria}>
+              {imagenesCategoria
+                .filter((item) =>
+                  item.nombre?.toLowerCase().includes(busquedaCategoria.toLowerCase())
+                )
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      setPreviewCategoria(item.url);
+                      // ✅ guardamos el id real en el estado del producto
+                      setProducto((prev) => ({ ...prev, ctgraid: item.id }));
+                      setOpenModalCategoria(false);
+                    }}
+                  >
+                    {item.url ? (
+                      <img src={item.url} alt={item.nombre} />
+                    ) : (
+                      <div className={styles.sinImagen}>{item.nombre}</div>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL MARCAS ── */}
+      {openModalMarca && (
+        <div
+          className={styles.ProductoModaCategoriaOverlay}
+          onClick={() => setOpenModalMarca(false)}
+        >
+          <div
+            className={styles.ProductoModaCategoria}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Selecciona una marca</h3>
+
+            <input
+              type="text"
+              placeholder="Buscar marca..."
+              value={busquedaMarca}
+              onChange={(e) => setBusquedaMarca(e.target.value)}
+            />
+
+            <div className={styles.gridCategoria}>
+              {imagenesMarca
+                .filter((item) =>
+                  item.nombre?.toLowerCase().includes(busquedaMarca.toLowerCase())
+                )
+                .map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => {
+                      setPreviewMarca(item.url);
+                      // ✅ guardamos el id real de la marca
+                      setProducto((prev) => ({ ...prev, marcaid: item.id }));
+                      setOpenModalMarca(false);
+                    }}
+                  >
+                    {item.url ? (
+                      <img src={item.url} alt={item.nombre} />
+                    ) : (
+                      <div className={styles.sinImagen}>{item.nombre}</div>
+                    )}
+                  </div>
+                ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CrudModal;

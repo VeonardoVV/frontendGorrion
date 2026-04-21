@@ -1,0 +1,6 @@
+producto.service.ts
+    - listarProductosPaginacion
+    - listarProductos
+    - obtenerProductoPorId
+    - actualizarProductoPorId
+    - getImagenProducto

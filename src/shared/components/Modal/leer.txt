@@ -1,0 +1,5 @@
+en esta carpeta Modal 
+Modal.module.css
+
+Modal.tsx        //en aqui solo sera el cascaron el cual tendra algunas cosas como cancelar(cerrar modal)
+CrudModal.txs    // en aqui es donde se ara los respectivos cruds ya sea a la tabla producto, categoria y marca

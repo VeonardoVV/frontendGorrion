@@ -1,0 +1,198 @@
+/* ─── Panel principal ───────────────────────────────────────── */
+.adminPanel {
+  width: 100%;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background-color: #DFE9F5;
+  border-bottom: 1px solid #B8CADE;
+  padding: 6px 10px 4px;
+  gap: 4px;
+}
+
+/* ─── Fila superior: botones + BD + Editar ──────────────────── */
+.botones_y_BD {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ─── Botones de navegación (base) ─────────────────────────── */
+.adminPanel button {
+  margin: 0;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1D2A34;
+  background-color: #DFE9F5;
+  border: 1.5px solid #9DABB8;
+  border-radius: 0;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.adminPanel button:hover {
+  background-color: #c9d8ea;
+  border-color: #6e8ca8;
+}
+
+/* Primer botón: esquinas izquierdas redondeadas */
+.adminPanel .botonesNav button:first-child {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+/* Último botón de nav: esquinas derechas redondeadas */
+.adminPanel .botonesNav button:last-child {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+/* ─── Botón Base de Datos ───────────────────────────────────── */
+.botonBaseDatos {
+  position: relative;
+}
+
+.botonBaseDatos button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #24518A;
+  color: white;
+  border: 1.5px solid #1a3d6e;
+  border-radius: 5px;
+  padding: 5px 12px 5px 8px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background-color 0.15s, box-shadow 0.15s;
+}
+
+.botonBaseDatos button:hover {
+  background-color: #1a3d6e;
+  box-shadow: 0 2px 6px rgba(36, 81, 138, 0.35);
+}
+
+.botonBaseDatos img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* ─── Modal mini (importar / exportar) ──────────────────────── */
+.modalFondo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  z-index: 1000;
+  padding: 50px 0 0 10px;
+}
+
+.modal {
+  position: absolute;
+  background: #ffffff;
+  border: 1px solid #B8CADE;
+  border-radius: 8px;
+  padding: 10px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 8px 24px rgba(29, 42, 52, 0.18);
+  top: 245px;
+  left: 100px;
+}
+
+.modal button {
+  background-color: #DFE9F5;
+  color: #1D2A34;
+  border: 1.5px solid #9DABB8;
+  border-radius: 5px;
+  padding: 6px 14px;
+  font-size: 13px;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.modal button:hover {
+  background-color: #c9d8ea;
+  border-color: #6e8ca8;
+}
+
+/* ─── Fila inferior: toggle + búsqueda ─────────────────────── */
+.toggle_cajaBusqueda {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  right: 0;
+}
+
+.adminPanel .toggle_cajaBusqueda p {
+  margin: 0;
+  font-size: 13px;
+  color: #2a3a4a;
+  white-space: nowrap;
+}
+
+/* ─── Search box ────────────────────────────────────────────── */
+.search_container {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #8899aa;
+  border-radius: 6px;
+  overflow: hidden;
+  width: 240px;
+  background: #ffffff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.search_container:focus-within {
+  border-color: #24518A;
+  box-shadow: 0 0 0 3px rgba(36, 81, 138, 0.15);
+}
+
+.search_input {
+  border: none;
+  padding: 5px 10px;
+  flex: 1;
+  font-size: 13px;
+  outline: none;
+  background: transparent;
+  color: #1D2A34;
+}
+
+.search_input::placeholder {
+  color: #8899aa;
+}
+
+.search_button {
+  background-color: #24518A;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.15s;
+  flex-shrink: 0;
+}
+
+.search_button:hover {
+  background-color: #1a3d6e;
+}
+
+/* ─── Estado activo del botón de nav ────────────────────────── */
+.boton {
+  border: 1.5px solid #9DABB8;
+  background-color: #DFE9F5;
+}
+
+.activo {
+  border-color: orange !important;
+  background-color: #fff3e0 !important;
+}

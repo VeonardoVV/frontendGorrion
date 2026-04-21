@@ -1,0 +1,38 @@
+/* para que no haya espacio en blanco */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* contenedor principal */
+.seccion {
+  width: 100%;
+  height: 200px;
+  display: flex;          /* pone todo en fila */
+  align-items: center;    /* centra verticalmente */
+  gap: 100px;             /* espacio entre elementos */
+  background-color: #DFE9F5;
+  margin-top: 20px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+
+}
+
+th, td {
+  border: 1px solid black;
+  padding: 8px;
+}
+
+.EditarEliminar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  
+}
+.EditarEliminar svg {
+  cursor: pointer;
+}

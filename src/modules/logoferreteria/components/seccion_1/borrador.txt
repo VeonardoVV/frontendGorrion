@@ -1,0 +1,608 @@
+/* ── Modal ── */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modalTitulo {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* ── Campos ── */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.opcional {
+  font-weight: 400;
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.inputFile {
+  font-size: 0.9rem;
+}
+
+.filaInput {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.inputTexto {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.inputTexto:focus {
+  border-color: #555;
+}
+
+/* Borde rojo si extensión inválida */
+.inputError {
+  border-color: #e53e3e !important;
+}
+
+.textoError {
+  color: #e53e3e;
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+.textoExito {
+  color: #2f855a;
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+/* ── Botones ── */
+.btnWebp {
+  white-space: nowrap;
+  padding: 0.5rem 0.9rem;
+  background: #4a90d9;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s;
+}
+
+.btnWebp:hover:not(:disabled) {
+  background: #2f6fbf;
+}
+
+.btnWebp:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.acciones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  margin-top: 0.5rem;
+}
+
+.btnAgregar {
+  padding: 0.55rem 1.2rem;
+  background: #2f855a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btnAgregar:hover:not(:disabled) {
+  background: #276749;
+}
+
+.btnAgregar:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btnCerrar {
+  padding: 0.55rem 1.2rem;
+  background: #e2e8f0;
+  color: #333;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s;
+}
+
+.btnCerrar:hover {
+  background: #cbd5e0;
+}
+
+.textoArchivo {
+  font-size: 0.82rem;
+  color: #555;
+  margin: 0.25rem 0 0;
+}
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  text-align: center;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 12px;
+}
+.card img {
+  width: 100%;
+  height: auto;          /* 👈 tamaño pequeño */
+  
+  border-radius: 6px;
+}
+.card p {
+  font-size: 0.7rem;
+  margin-top: 4px;
+  word-break: break-word;
+}
+
+
+tsx --------------------------------------------------
+
+import { useEffect, useState, useRef } from "react";
+import { supabase } from "../../../../app/services/apiSupabase";
+import styles from "./seccion_1.module.css";
+
+const Seccion_1 = () => {
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [imagenSeleccionada, setImagenSeleccionada] = useState<any>(null);
+  const [openModal, setOpenModal] = useState(false);
+
+  const [usarStorage, setUsarStorage] = useState<boolean>(true);
+  const [nombreImagen, setNombreImagen] = useState("");
+  const [link, setLink] = useState("");
+  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+
+  const [enviando, setEnviando] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState("");
+  const [mensajeError, setMensajeError] = useState("");
+
+  const [preview, setPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [enUso, setEnUso] = useState<string[]>([]);
+  const [disponibles, setDisponibles] = useState<string[]>([]);
+  const [extension, setExtension] = useState("");
+const abrirEdicion = (url: string) => {
+  const nombre = url.split("/").pop(); // extrae nombre del archivo
+
+  setModoEdicion(true);
+  setOpenModal(true);
+
+  setNombreImagen(nombre || "");
+  setLink("");
+
+  setImagenSeleccionada({
+    url,
+    nombre,
+  });
+};
+const convertirAWebP = (file: File, quality = 0.8): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) return reject("No canvas context");
+
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      ctx.drawImage(img, 0, 0);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) return reject("Error convirtiendo a WebP");
+          resolve(blob);
+        },
+        "image/webp",
+        quality
+      );
+    };
+
+    img.onerror = reject;
+
+    img.src = URL.createObjectURL(file);
+  });
+};
+  // 🔥 obtener imágenes
+  const obtenerImagenes = async () => {
+    const { data, error } = await supabase
+      .from("seccion1")
+      .select("sc1nombreimagen, sc1usarstorage");
+
+    if (error) {
+      console.error("Error:", error.message);
+      return;
+    }
+
+    if (!data) return;
+
+    const getUrl = (nombre: string) => {
+      const { data } = supabase.storage
+        .from("BannerFerreteria")
+        .getPublicUrl(nombre);
+
+      return data.publicUrl;
+    };
+
+    const enUsoArr = data
+      .filter((item) => item.sc1usarstorage === true && item.sc1nombreimagen)
+      .map((item) => getUrl(item.sc1nombreimagen));
+
+    const disponiblesArr = data
+      .filter((item) => item.sc1usarstorage === false && item.sc1nombreimagen)
+      .map((item) => getUrl(item.sc1nombreimagen));
+
+    setEnUso(enUsoArr);
+    setDisponibles(disponiblesArr);
+  };
+
+  useEffect(() => {
+    obtenerImagenes();
+  }, []);
+
+  // 🧹 limpiar URL preview (evita memory leak)
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  const handleInsertar = async () => {
+  if (!archivoImagen) return;
+
+  setEnviando(true);
+  setMensajeError("");
+  setMensajeExito("");
+
+  try {
+    // 🔥 convertir a webp
+    const webpBlob = await convertirAWebP(archivoImagen);
+
+    // 🔥 nombre final siempre .webp
+    const baseName = nombreImagen.split(".")[0];
+    const finalName = `${baseName}.webp`;
+
+    const { error: uploadError } = await supabase.storage
+      .from("BannerFerreteria")
+      .upload(finalName, webpBlob, {
+        contentType: "image/webp",
+        upsert: true,
+      });
+
+    if (uploadError) throw new Error(uploadError.message);
+
+    const { error } = await supabase.from("seccion1").insert({
+      sc1usarstorage: usarStorage,
+      sc1nombreimagen: finalName,
+      sc1link: link.trim() || null,
+    });
+
+    if (error) throw new Error(error.message);
+
+    setMensajeExito("✅ Imagen convertida a WEBP e insertada");
+
+    await obtenerImagenes();
+
+    // reset
+    setNombreImagen("");
+    setLink("");
+    setArchivoImagen(null);
+    setPreview(null);
+    setUsarStorage(true);
+
+  } catch (err: any) {
+    setMensajeError(`❌ ${err.message}`);
+  } finally {
+    setEnviando(false);
+  }
+};
+
+const handleCerrarModal = () => {
+  setOpenModal(false);
+  setModoEdicion(false);
+  setImagenSeleccionada(null);
+
+  setNombreImagen("");
+  setLink("");
+  setArchivoImagen(null);
+  setPreview(null);
+  setMensajeExito("");
+  setMensajeError("");
+};
+const handleActualizar = async () => {
+  if (!imagenSeleccionada) return;
+
+  setEnviando(true);
+  setMensajeError("");
+  setMensajeExito("");
+
+  try {
+    const nombreViejo = imagenSeleccionada.nombre;
+    const nombreNuevo = `${Date.now()}-${nombreImagen}.webp`;
+
+    // 1. descargar archivo viejo desde storage
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from("BannerFerreteria")
+      .download(nombreViejo);
+
+    if (downloadError || !fileData) {
+      throw new Error("Error al obtener archivo original");
+    }
+
+    // 2. subir con nuevo nombre
+    const { error: uploadError } = await supabase.storage
+      .from("BannerFerreteria")
+      .upload(nombreNuevo, fileData, {
+        contentType: "image/webp",
+        upsert: true,
+      });
+
+    if (uploadError) throw new Error(uploadError.message);
+
+    // 3. eliminar archivo viejo
+    const { error: deleteStorageError } = await supabase.storage
+      .from("BannerFerreteria")
+      .remove([nombreViejo]);
+
+    if (deleteStorageError) {
+      console.warn("No se pudo eliminar el archivo viejo");
+    }
+
+    // 4. actualizar DB
+    const { error } = await supabase
+      .from("seccion1")
+      .update({
+        sc1nombreimagen: nombreNuevo,
+        sc1link: link || null,
+      })
+      .eq("sc1nombreimagen", nombreViejo);
+
+    if (error) throw error;
+
+    setMensajeExito("✅ Imagen renombrada y actualizada");
+
+    await obtenerImagenes();
+    handleCerrarModal();
+
+  } catch (err: any) {
+    setMensajeError(err.message);
+  } finally {
+    setEnviando(false);
+  }
+};
+const handleEliminar = async () => {
+  if (!imagenSeleccionada) return;
+
+  setEnviando(true);
+
+  try {
+    // 1. eliminar de storage
+    await supabase.storage
+      .from("BannerFerreteria")
+      .remove([imagenSeleccionada.nombre]);
+
+    // 2. eliminar de DB
+    const { error } = await supabase
+      .from("seccion1")
+      .delete()
+      .eq("sc1nombreimagen", imagenSeleccionada.nombre);
+
+    if (error) throw error;
+
+    setMensajeExito("🗑️ Imagen eliminada");
+
+    await obtenerImagenes();
+    handleCerrarModal();
+
+  } catch (err: any) {
+    setMensajeError(err.message);
+  } finally {
+    setEnviando(false);
+  }
+};
+  return (
+    <div className={styles.seccion}>
+      {/* botón abrir modal */}
+      <svg
+        viewBox="0 0 100 100"
+        width="100"
+        height="100"
+        onClick={() => setOpenModal(true)}
+        style={{ cursor: "pointer" }}
+      >
+        <path
+          d="M20 10 H80 Q90 10 90 20 V80 Q90 90 80 90 H20 Q10 90 10 80 V20 Q10 10 20 10 Z M50 30 V70 M30 50 H70"
+          fill="none"
+          stroke="black"
+          strokeWidth="4"
+        />
+      </svg>
+
+      {/* modal */}
+      {openModal && (
+        <div className={styles.modalOverlay} onClick={handleCerrarModal}>
+          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h3>Insertar banner</h3>
+
+            <select
+              value={usarStorage ? "true" : "false"}
+              onChange={(e) => setUsarStorage(e.target.value === "true")}
+            >
+              <option value="true">Activo</option>
+              <option value="false">Disponible</option>
+            </select>
+
+            {/* input file hidden */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files?.[0] ?? null;
+
+                setArchivoImagen(file);
+
+                if (file) {
+                  const url = URL.createObjectURL(file);
+                  setPreview(url);
+
+                  // 🔥 separar nombre y extensión
+                  const fullName = file.name;
+                  const lastDot = fullName.lastIndexOf(".");
+
+                  const nameWithoutExt = fullName.substring(0, lastDot);
+                  const ext = fullName.substring(lastDot); // .jpg .png etc
+
+                  setExtension(ext); // 👈 guardas extensión fija
+
+                  // nombre editable base
+                  const uniqueName = `${Date.now()}-${nameWithoutExt}`;
+
+                  setNombreImagen(uniqueName);
+                } else {
+                  setPreview(null);
+                  setNombreImagen("");
+                  setExtension("");
+                }
+              }}
+            />
+
+            {/* botón para abrir file picker */}
+            <button onClick={() => fileInputRef.current?.click()}>
+              Seleccionar imagen
+            </button>
+
+            {preview && (
+              <img
+                src={preview}
+                alt="preview"
+                width={200}
+                style={{ marginTop: "10px", borderRadius: "8px" }}
+              />
+            )}
+            <p><b>Nombre:</b><br />
+
+            <input
+              type="text"
+              value={nombreImagen}
+              onChange={(e) => setNombreImagen(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "8px",
+                marginTop: "5px",
+              }}
+            />
+            </p>
+            
+            <p><b>Link de la Imagen de respaldo :</b></p>
+            <input
+              type="url"
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="https://..."
+            />
+
+            {mensajeExito && <p>{mensajeExito}</p>}
+            {mensajeError && <p>{mensajeError}</p>}
+
+            {modoEdicion ? (
+              <>
+                <button onClick={handleActualizar} disabled={enviando}>
+                  {enviando ? "Actualizando..." : "Actualizar"}
+                </button>
+
+                <button
+                  onClick={handleEliminar}
+                  disabled={enviando}
+                  style={{ background: "red", color: "white", marginLeft: "10px" }}
+                >
+                  Eliminar
+                </button>
+              </>
+            ) : (
+              <button onClick={handleInsertar} disabled={enviando}>
+                {enviando ? "Guardando..." : "Guardar"}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* UI */}
+      <h2>Banners</h2>
+
+      <h3>En uso</h3>
+      <div>
+        {enUso.map((url) => (
+          <img
+            key={url}
+            src={url}
+            width={200}
+            alt="banner"
+            style={{ cursor: "pointer" }}
+            onClick={() => abrirEdicion(url)}
+          />
+        ))}
+      </div>
+
+      <h3>Disponibles</h3>
+      <div>
+        {disponibles.map((url) => (
+          <img key={url} src={url} width={200} alt="banner" />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Seccion_1;

@@ -1,0 +1,9 @@
+.contenidoHome{
+    margin-top: 100px;
+}
+
+.fila{
+    margin-top: 30px;
+    display: flex;        /* 👈 los pone en la misma fila */
+    gap: 40px;            /* espacio entre secciones */
+}

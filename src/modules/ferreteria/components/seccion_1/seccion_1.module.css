@@ -1,0 +1,8 @@
+.seccion {
+  background: rgb(79, 118, 131);
+
+  overflow: hidden;
+  min-width: 0;
+
+  flex: 0 0 70%;   /* 👈 ocupa solo 70% del ancho */
+}

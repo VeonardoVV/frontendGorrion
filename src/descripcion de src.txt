@@ -1,0 +1,10 @@
+-- app/routes > AppRoutes.tsx
+aqui es donde hago que se conecten todos mis rutas  especificamente en 
+
+-- assets
+esto esta momentaneamente , es para poner imagenes de manera local pero como lo boy a llamar a esa imagenes desde mi base de datos ps ya no me sirve (por el momento) 
+
+-- components 
+se supone que aqui utilzo cosas reutilizables como tablas o mensajes , etc.  pero por el momento no lo uso ya que me puede llevar mas tiempo poder aprender y adaptarme a ese metodo de trabajo a si que no lo usare(por el momento) 
+
+-- 

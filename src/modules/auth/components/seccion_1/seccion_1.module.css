@@ -1,0 +1,104 @@
+
+.wrapper{
+  display: flex;
+  justify-content: center; /* centro horizontal */
+  align-items: center;     /* centro vertical */
+  height: 100vh;           /* ocupa toda la pantalla */
+  background-color: #f0f2f5;
+  
+}
+
+.botonIngresar{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    align-items: center;
+    color: white;
+}
+.botonIngresar button{
+    background: linear-gradient(270deg, #fe9b21, #ffba52);
+    width: 80%;
+    border-radius: 5px;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    
+}
+
+.wrapper button:hover{
+  background: linear-gradient(270deg, #051b3b, #ffba52);
+}
+
+.contenido{
+    max-height: 415px;
+    max-width: 500px;
+    background: #fff;
+    box-shadow: 0 4px 12px #0000001a;
+    padding-left: 34px;
+    padding-right: 34px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    margin: 0;
+    font-weight: 400;
+    margin: 0 auto;
+    padding-bottom: 60px;
+    padding-top: 30px;
+
+}
+
+.contenido .logo{
+    
+    align-items: center ;
+    max-width: 20%;
+    box-sizing: border-box;
+    margin: 0 auto;
+    font-weight: 400; 
+}
+
+.contenido h3{
+    text-align: left;
+    color: #111d5d;
+    font-size: 1.7em;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';;
+    font-weight: bold;
+}
+
+.contenido a{
+    color: blue;
+    display: flex;
+    justify-content: center;
+}
+
+.contenido a:hover{
+    text-decoration: underline;
+}
+
+.inputUsuario:hover{
+    border-color: rgb(95, 163, 206);
+}
+
+.inputGroup{
+  position: relative;
+  width: 100%;
+}
+
+.icon{
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.inputUsuario{
+  width: 100%;
+  padding: 1px 10px 1px 35px; /* espacio para el icono */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  color: rgb(134, 134, 134);
+}
+
+.inputUsuario:focus{
+  border-color: lightblue;
+}
+

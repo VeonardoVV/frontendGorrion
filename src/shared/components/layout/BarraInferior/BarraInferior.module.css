@@ -1,0 +1,52 @@
+.footerCss{
+    padding: 55px 40px;
+    background-color: rgb(3, 8, 82);
+    color: rgb(255, 255, 255);
+    display: flex;
+    flex-direction: column;
+    -webkit-box-pack: center;
+    justify-content: center;
+    -webkit-box-align: center;
+    align-items: center;
+}
+.footerCss .primero{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 50px;
+}
+
+.footerCss .uno .logo{
+    width: 200px;
+    height: 100px;
+    color: aliceblue;
+    margin-bottom: 30px; /* 👈 baja el contenido siguiente */
+
+}
+.footerCss .uno .unoTexto span {
+  display: block;        /* 👈 ahora sí bajan */
+  margin-bottom: 15px;
+}
+.footerCss .dos span {
+  display: block;        /* 👈 ahora sí bajan */
+  margin-bottom: 15px;
+}
+.footerCss .tres     span {
+  display: block;        /* 👈 ahora sí bajan */
+  margin-bottom: 15px;
+}
+
+.footerCss .redesSociales{
+    display: flex;
+    gap: 10px; /* espacio entre iconos */
+    align-items: center;
+}
+
+.footerCss .redesSociales svg{
+    fill: currentColor;
+}
+
+.contenedorLogo{
+  width: 110px;
+  height: 110px;
+}

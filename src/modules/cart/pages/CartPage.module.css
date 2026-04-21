@@ -1,0 +1,14 @@
+.contenidoHome{
+    margin-top: 100px;
+}
+
+.contenidoHome p{
+    font-size: 34px;
+    font-weight: bold;
+    line-height: 45px;
+    max-width: 1000px;
+    margin: 0px auto 40px;
+    padding-left: 100px;
+    padding-top: 30px;
+    color: #030852;
+}

@@ -1,0 +1,68 @@
+/* para que no haya espacio en blanco */
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+/* contenedor principal */
+.seccion {
+  width: 100%;
+  height: 200px;
+  display: flex;          /* pone todo en fila */
+  align-items: center;    /* centra verticalmente */
+  gap: 100px;             /* espacio entre elementos */
+  background-color: #DFE9F5;
+}
+
+/* imagen del panel */
+.imagenPanel img {
+  margin-left: 10px;
+  margin-top: 10px;
+  height: 190px;
+  border-radius: 10px;
+}
+/* contenedor principal */
+.PCM {
+  display: flex;
+  gap: 20px;
+  justify-content: flex-start;
+}
+.PCM1, .PCM2, .PCM3 {
+  width: 200px;
+  height: 130px;
+  display: flex;
+  flex-direction: column;   /* ahora vertical para que el número esté debajo */
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 12px;
+  font-weight: bold;
+  color: rgb(0, 5, 82);
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(2, 2, 2, 0.2);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+/* icono + palabra en fila */
+.cardLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;  /* separa del número */
+}
+
+/* número debajo */
+.cardNumber {
+  font-size: 1.5rem;
+}
+
+/* colores */
+.PCM1 { background-color: #f5f5f5; }
+.PCM2 { background-color: #ffffff; }
+.PCM3 { background-color: #fafff7; }
+
+/* hover */
+.PCM1:hover, .PCM2:hover, .PCM3:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}

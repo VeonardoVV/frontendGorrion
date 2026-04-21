@@ -1,0 +1,46 @@
+.carruselWrapper {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.carruselViewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.carruselTrack {
+  display: flex;
+  transition: transform 0.5s ease;
+}
+
+.logoContainer {
+  flex: 0 0 auto; /* que no se encoge ni crezca */
+  width: 200px;   /* ancho de cada logo */
+  margin: 0 10px;
+}
+
+.logoContainer img {
+  width: 100%;
+  object-fit: contain;
+}
+
+.leftArrow,
+.rightArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.3);
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 10;
+  padding: 5px 10px;
+  border-radius: 50%;
+}
+
+.leftArrow { left: 0; }
+.rightArrow { right: 0; }

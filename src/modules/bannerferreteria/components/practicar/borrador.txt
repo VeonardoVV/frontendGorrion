@@ -1,0 +1,561 @@
+import { useEffect, useState, useRef } from "react";
+import { supabase } from "../../../../app/services/apiSupabase";
+
+// ─── tipos ────────────────────────────────────────────────────────────────────
+interface ImagenItem {
+  sc1id: number;
+  sc1usarstorage: boolean;
+  sc1nombreimagen: string;
+  sc1link: string | null;
+  url: string;
+}
+
+// ─── Componente principal ─────────────────────────────────────────────────────
+const Seccion_1 = () => {
+  const [openModal, setOpenModal] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [seleccionado, setSeleccionado] = useState<ImagenItem | null>(null);
+
+  const [usarStorage, setUsarStorage] = useState(true);
+  const [nombreImagen, setNombreImagen] = useState("");
+  const [link, setLink] = useState("");
+  const [archivoImagen, setArchivoImagen] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const [enviando, setEnviando] = useState(false);
+  const [mensajeExito, setMensajeExito] = useState("");
+  const [mensajeError, setMensajeError] = useState("");
+  const [confirmEliminar, setConfirmEliminar] = useState(false);
+
+  const [activos, setActivos] = useState<ImagenItem[]>([]);
+  const [inactivos, setInactivos] = useState<ImagenItem[]>([]);
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // ─── helpers ──────────────────────────────────────────────────────────────
+  const getPublicUrl = (nombre: string) =>
+    supabase.storage.from("BannerFerreteria").getPublicUrl(nombre).data.publicUrl;
+
+  const convertirAWebP = (file: File, quality = 0.8): Promise<Blob> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject("No canvas context");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(
+          (blob) => (blob ? resolve(blob) : reject("Error convirtiendo a WebP")),
+          "image/webp",
+          quality
+        );
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(file);
+    });
+
+  // ─── obtener datos ────────────────────────────────────────────────────────
+  const obtenerImagenes = async () => {
+    const { data, error } = await supabase
+      .from("seccion1")
+      .select("sc1id, sc1usarstorage, sc1nombreimagen, sc1link")
+      .order("sc1id", { ascending: false });
+
+    if (error || !data) { console.error(error?.message); return; }
+
+    const mapped: ImagenItem[] = data.map((item) => ({
+      sc1id: item.sc1id,
+      sc1usarstorage: item.sc1usarstorage,
+      sc1nombreimagen: item.sc1nombreimagen,
+      sc1link: item.sc1link,
+      url: getPublicUrl(item.sc1nombreimagen),
+    }));
+
+    setActivos(mapped.filter((i) => i.sc1usarstorage === true));
+    setInactivos(mapped.filter((i) => i.sc1usarstorage === false));
+  };
+
+  useEffect(() => { obtenerImagenes(); }, []);
+
+  useEffect(() => {
+    return () => { if (preview) URL.revokeObjectURL(preview); };
+  }, [preview]);
+
+  // ─── abrir modal edición ──────────────────────────────────────────────────
+  const abrirEdicion = (item: ImagenItem) => {
+    setSeleccionado(item);
+    setModoEdicion(true);
+    setOpenModal(true);
+    setNombreImagen(item.sc1nombreimagen.split(".")[0]);
+    setLink(item.sc1link ?? "");          // 👈 carga el link guardado
+    setUsarStorage(item.sc1usarstorage);
+    setPreview(item.url);
+    setMensajeExito("");
+    setMensajeError("");
+    setConfirmEliminar(false);
+    setArchivoImagen(null);
+  };
+
+  // ─── cerrar modal ─────────────────────────────────────────────────────────
+  const handleCerrar = () => {
+    setOpenModal(false);
+    setModoEdicion(false);
+    setSeleccionado(null);
+    setNombreImagen("");
+    setLink("");
+    setArchivoImagen(null);
+    setPreview(null);
+    setMensajeExito("");
+    setMensajeError("");
+    setConfirmEliminar(false);
+    setUsarStorage(true);
+  };
+
+  // ─── insertar ─────────────────────────────────────────────────────────────
+  const handleInsertar = async () => {
+    if (!archivoImagen) { setMensajeError("Selecciona una imagen."); return; }
+    setEnviando(true); setMensajeError(""); setMensajeExito("");
+    try {
+      const webpBlob = await convertirAWebP(archivoImagen);
+      const baseName = nombreImagen.split(".")[0];
+      const finalName = `${baseName}.webp`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("BannerFerreteria")
+        .upload(finalName, webpBlob, { contentType: "image/webp", upsert: true });
+      if (uploadError) throw new Error(uploadError.message);
+
+      const { error } = await supabase.from("seccion1").insert({
+        sc1usarstorage: usarStorage,
+        sc1nombreimagen: finalName,
+        sc1link: link.trim() || null,
+      });
+      if (error) throw new Error(error.message);
+
+      setMensajeExito("✅ Imagen guardada correctamente");
+      await obtenerImagenes();
+      handleCerrar();
+    } catch (err: any) {
+      setMensajeError(`❌ ${err.message}`);
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  // ─── actualizar ───────────────────────────────────────────────────────────
+  const handleActualizar = async () => {
+    if (!seleccionado) return;
+    setEnviando(true); setMensajeError(""); setMensajeExito("");
+    try {
+      let nombreFinal = seleccionado.sc1nombreimagen;
+
+      if (archivoImagen) {
+        // subió nueva imagen → convertir y reemplazar
+        const webpBlob = await convertirAWebP(archivoImagen);
+        const baseName = nombreImagen.split(".")[0];
+        nombreFinal = `${baseName}.webp`;
+
+        const { error: uploadError } = await supabase.storage
+          .from("BannerFerreteria")
+          .upload(nombreFinal, webpBlob, { contentType: "image/webp", upsert: true });
+        if (uploadError) throw new Error(uploadError.message);
+
+        // eliminar viejo si cambió nombre
+        if (nombreFinal !== seleccionado.sc1nombreimagen) {
+          await supabase.storage.from("BannerFerreteria").remove([seleccionado.sc1nombreimagen]);
+        }
+      }
+
+      const { error } = await supabase
+        .from("seccion1")
+        .update({
+          sc1nombreimagen: nombreFinal,
+          sc1link: link.trim() || null,
+          sc1usarstorage: usarStorage,
+        })
+        .eq("sc1id", seleccionado.sc1id);
+      if (error) throw error;
+
+      setMensajeExito("✅ Banner actualizado");
+      await obtenerImagenes();
+      handleCerrar();
+    } catch (err: any) {
+      setMensajeError(`❌ ${err.message}`);
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  // ─── eliminar ─────────────────────────────────────────────────────────────
+  const handleEliminar = async () => {
+    if (!seleccionado) return;
+    setEnviando(true);
+    try {
+      await supabase.storage.from("BannerFerreteria").remove([seleccionado.sc1nombreimagen]);
+      const { error } = await supabase.from("seccion1").delete().eq("sc1id", seleccionado.sc1id);
+      if (error) throw error;
+      await obtenerImagenes();
+      handleCerrar();
+    } catch (err: any) {
+      setMensajeError(`❌ ${err.message}`);
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  // ─── render ───────────────────────────────────────────────────────────────
+  return (
+    <div style={s.page}>
+
+      {/* ── Top bar ── */}
+      <div style={s.topBar}>
+        <div>
+          <h1 style={s.pageTitle}>Banners</h1>
+          <p style={s.pageSubtitle}>
+            <span style={{ color: "#16a34a", fontWeight: 700 }}>{activos.length} activos</span>
+            {" · "}
+            <span style={{ color: "#9ca3af" }}>{inactivos.length} inactivos</span>
+          </p>
+        </div>
+        <button style={s.addBtn} onClick={() => { setModoEdicion(false); setOpenModal(true); }}>
+          + Añadir banner
+        </button>
+      </div>
+
+      {/* ── Activos ── */}
+      <section style={s.section}>
+        <div style={s.sectionHeader}>
+          <span style={s.dot("#16a34a")} />
+          <h2 style={s.sectionTitle}>Activos</h2>
+          <span style={s.count}>{activos.length}</span>
+        </div>
+        {activos.length === 0
+          ? <p style={s.empty}>No hay banners activos.</p>
+          : <div style={s.grid}>
+              {activos.map((item) => <BannerCard key={item.sc1id} item={item} onEditar={abrirEdicion} />)}
+            </div>
+        }
+      </section>
+
+      {/* ── Inactivos ── */}
+      <section style={s.section}>
+        <div style={s.sectionHeader}>
+          <span style={s.dot("#d1d5db")} />
+          <h2 style={s.sectionTitle}>Inactivos</h2>
+          <span style={s.count}>{inactivos.length}</span>
+        </div>
+        {inactivos.length === 0
+          ? <p style={s.empty}>No hay banners inactivos.</p>
+          : <div style={s.grid}>
+              {inactivos.map((item) => <BannerCard key={item.sc1id} item={item} onEditar={abrirEdicion} inactive />)}
+            </div>
+        }
+      </section>
+
+      {/* ── Modal ── */}
+      {openModal && (
+        <div style={s.overlay} onClick={(e) => e.target === e.currentTarget && handleCerrar()}>
+          <div style={s.modal}>
+
+            {/* header */}
+            <div style={s.modalHeader}>
+              <span style={s.modalTitle}>{modoEdicion ? "✏️ Editar banner" : "➕ Añadir banner"}</span>
+              <button style={s.xBtn} onClick={handleCerrar}>✕</button>
+            </div>
+
+            <div style={s.modalBody}>
+
+              {/* estado */}
+              <label style={s.label}>Estado en página</label>
+              <div style={s.toggleRow}>
+                <div
+                  style={{ ...s.toggle, background: usarStorage ? "#16a34a" : "#d1d5db" }}
+                  onClick={() => setUsarStorage(!usarStorage)}
+                >
+                  <div style={{ ...s.toggleBall, transform: usarStorage ? "translateX(20px)" : "translateX(2px)" }} />
+                </div>
+                <span style={{ fontSize: "13px", color: usarStorage ? "#16a34a" : "#9ca3af", fontWeight: 600 }}>
+                  {usarStorage ? "Activo" : "Inactivo"}
+                </span>
+              </div>
+
+              {/* imagen */}
+              <label style={s.label}>Imagen</label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0] ?? null;
+                  setArchivoImagen(file);
+                  if (file) {
+                    setPreview(URL.createObjectURL(file));
+                    const lastDot = file.name.lastIndexOf(".");
+                    setNombreImagen(`${Date.now()}-${file.name.substring(0, lastDot)}`);
+                  } else {
+                    setPreview(null);
+                    setNombreImagen("");
+                  }
+                }}
+              />
+              <button style={s.fileBtn} onClick={() => fileInputRef.current?.click()}>
+                📂 Seleccionar imagen
+              </button>
+
+              {preview && (
+                <div style={s.previewBox}>
+                  <img src={preview} alt="preview" style={s.previewImg} />
+                </div>
+              )}
+
+              {/* nombre */}
+              <label style={s.label}>Nombre del archivo</label>
+              <input
+                style={s.input}
+                type="text"
+                value={nombreImagen}
+                onChange={(e) => setNombreImagen(e.target.value)}
+                placeholder="nombre-del-banner"
+              />
+
+              {/* link */}
+              <label style={s.label}>Link externo (opcional)</label>
+              <input
+                style={s.input}
+                type="url"
+                value={link}
+                onChange={(e) => setLink(e.target.value)}
+                placeholder="https://..."
+              />
+
+              {mensajeExito && <p style={s.msgOk}>{mensajeExito}</p>}
+              {mensajeError && <p style={s.msgErr}>{mensajeError}</p>}
+
+              {/* acciones */}
+              {modoEdicion ? (
+                confirmEliminar ? (
+                  <div style={s.confirmBox}>
+                    <p style={{ margin: "0 0 10px", fontSize: "14px", color: "#b91c1c" }}>
+                      ⚠️ ¿Seguro que quieres eliminar este banner?
+                    </p>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button style={s.cancelBtn} onClick={() => setConfirmEliminar(false)}>No, cancelar</button>
+                      <button style={s.delConfirmBtn} onClick={handleEliminar} disabled={enviando}>
+                        {enviando ? "Eliminando…" : "Sí, eliminar"}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={s.actions}>
+                    <button style={s.delBtn} onClick={() => setConfirmEliminar(true)}>🗑 Eliminar</button>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button style={s.cancelBtn} onClick={handleCerrar}>Cancelar</button>
+                      <button style={s.saveBtn} onClick={handleActualizar} disabled={enviando}>
+                        {enviando ? "Guardando…" : "💾 Actualizar"}
+                      </button>
+                    </div>
+                  </div>
+                )
+              ) : (
+                <div style={s.actions}>
+                  <div />
+                  <div style={{ display: "flex", gap: "8px" }}>
+                    <button style={s.cancelBtn} onClick={handleCerrar}>Cancelar</button>
+                    <button style={s.saveBtn} onClick={handleInsertar} disabled={enviando}>
+                      {enviando ? "Guardando…" : "💾 Guardar"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Tarjeta de banner ────────────────────────────────────────────────────────
+const BannerCard = ({
+  item,
+  onEditar,
+  inactive = false,
+}: {
+  item: ImagenItem;
+  onEditar: (item: ImagenItem) => void;
+  inactive?: boolean;
+}) => (
+  <div
+    style={{ ...s.card, opacity: inactive ? 0.65 : 1 }}
+    onClick={() => onEditar(item)}
+    title="Click para editar"
+  >
+    <div style={s.cardImgWrap}>
+      <img src={item.url} alt={item.sc1nombreimagen} style={s.cardImg} />
+      <div style={s.cardOverlay}>
+        <span style={s.cardEditIcon}>✏️</span>
+      </div>
+    </div>
+    <div style={s.cardFooter}>
+      <span style={s.cardName} title={item.sc1nombreimagen}>
+        {item.sc1nombreimagen}
+      </span>
+      {item.sc1link && (
+        <a
+          href={item.sc1link}
+          target="_blank"
+          rel="noreferrer"
+          style={s.cardLink}
+          onClick={(e) => e.stopPropagation()}
+          title={item.sc1link}
+        >
+          🔗
+        </a>
+      )}
+    </div>
+  </div>
+);
+
+// ─── inline types helper ──────────────────────────────────────────────────────
+interface ImagenItem {
+  sc1id: number;
+  sc1usarstorage: boolean;
+  sc1nombreimagen: string;
+  sc1link: string | null;
+  url: string;
+}
+
+// ─── estilos ──────────────────────────────────────────────────────────────────
+const s = {
+  page: { padding: "28px 32px", fontFamily: "'Segoe UI', sans-serif", maxWidth: "1100px" },
+
+  topBar: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" },
+  pageTitle: { fontSize: "22px", fontWeight: "800", color: "#111", margin: 0 },
+  pageSubtitle: { fontSize: "13px", color: "#6b7280", marginTop: "4px" },
+  addBtn: {
+    background: "#111", color: "#fff", border: "none", borderRadius: "10px",
+    padding: "10px 20px", fontSize: "14px", fontWeight: "700", cursor: "pointer",
+    boxShadow: "0 4px 14px rgba(0,0,0,0.18)", letterSpacing: "0.01em",
+  },
+
+  section: { marginBottom: "36px" },
+  sectionHeader: { display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" },
+  sectionTitle: { fontSize: "15px", fontWeight: "700", color: "#374151", margin: 0 },
+  dot: (color: string) => ({
+    width: "10px", height: "10px", borderRadius: "50%", background: color, flexShrink: 0,
+  } as React.CSSProperties),
+  count: {
+    background: "#f3f4f6", color: "#6b7280", borderRadius: "99px",
+    fontSize: "12px", padding: "2px 9px", fontWeight: "700",
+  },
+  empty: { color: "#b0b7c3", fontSize: "14px", margin: "0 0 12px" },
+
+  grid: {
+    display: "flex", flexWrap: "wrap" as const, gap: "16px",
+  },
+
+  card: {
+    width: "200px", borderRadius: "12px", overflow: "hidden",
+    border: "1px solid #e5e7eb", boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+    cursor: "pointer", transition: "transform 0.15s, box-shadow 0.15s",
+    background: "#fff",
+  },
+  cardImgWrap: { position: "relative" as const, overflow: "hidden" },
+  cardImg: { width: "100%", height: "120px", objectFit: "cover" as const, display: "block" },
+  cardOverlay: {
+    position: "absolute" as const, inset: 0, background: "rgba(0,0,0,0.4)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    opacity: 0, transition: "opacity 0.2s",
+    // hover via CSS class not possible inline — use :hover in module.css or onMouseEnter
+  },
+  cardEditIcon: { fontSize: "22px" },
+  cardFooter: {
+    display: "flex", alignItems: "center", justifyContent: "space-between",
+    padding: "8px 10px", gap: "6px",
+  },
+  cardName: {
+    fontSize: "11px", color: "#6b7280", whiteSpace: "nowrap" as const,
+    overflow: "hidden", textOverflow: "ellipsis", flex: 1,
+  },
+  cardLink: { fontSize: "14px", textDecoration: "none", flexShrink: 0 },
+
+  // modal
+  overlay: {
+    position: "fixed" as const, inset: 0, background: "rgba(0,0,0,0.5)",
+    display: "flex", alignItems: "center", justifyContent: "center",
+    zIndex: 1000, padding: "16px",
+  },
+  modal: {
+    background: "#fff", borderRadius: "16px", width: "100%", maxWidth: "460px",
+    boxShadow: "0 24px 64px rgba(0,0,0,0.22)", display: "flex", flexDirection: "column" as const,
+    maxHeight: "90vh",
+  },
+  modalHeader: {
+    display: "flex", justifyContent: "space-between", alignItems: "center",
+    padding: "16px 20px", borderBottom: "1px solid #f3f4f6",
+  },
+  modalTitle: { fontSize: "16px", fontWeight: "800", color: "#111" },
+  xBtn: {
+    background: "#f3f4f6", border: "none", borderRadius: "8px", width: "30px", height: "30px",
+    cursor: "pointer", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center",
+  },
+  modalBody: { padding: "20px", overflowY: "auto" as const, display: "flex", flexDirection: "column" as const, gap: "6px" },
+
+  label: { fontSize: "13px", fontWeight: "600", color: "#374151", marginTop: "8px", display: "block" },
+  input: {
+    width: "100%", border: "1px solid #d1d5db", borderRadius: "8px",
+    padding: "9px 12px", fontSize: "13px", color: "#111", outline: "none",
+    boxSizing: "border-box" as const,
+  },
+  fileBtn: {
+    background: "#f9fafb", border: "1.5px dashed #d1d5db", borderRadius: "8px",
+    padding: "9px 14px", fontSize: "13px", fontWeight: "600", color: "#374151",
+    cursor: "pointer", textAlign: "left" as const,
+  },
+  previewBox: {
+    background: "#f9fafb", borderRadius: "10px", padding: "10px",
+    display: "flex", justifyContent: "center",
+  },
+  previewImg: { maxWidth: "100%", maxHeight: "160px", borderRadius: "8px", objectFit: "contain" as const },
+
+  toggleRow: { display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" },
+  toggle: {
+    width: "44px", height: "24px", borderRadius: "99px", cursor: "pointer",
+    position: "relative" as const, transition: "background 0.2s", flexShrink: 0,
+  },
+  toggleBall: {
+    position: "absolute" as const, top: "3px", width: "18px", height: "18px",
+    background: "#fff", borderRadius: "50%", transition: "transform 0.2s",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+  },
+
+  msgOk: { fontSize: "13px", color: "#16a34a", margin: "4px 0" },
+  msgErr: { fontSize: "13px", color: "#dc2626", margin: "4px 0" },
+
+  actions: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "12px", gap: "8px" },
+  cancelBtn: {
+    background: "#f3f4f6", border: "1px solid #e5e7eb", borderRadius: "8px",
+    padding: "9px 16px", fontSize: "13px", fontWeight: "600", color: "#374151", cursor: "pointer",
+  },
+  saveBtn: {
+    background: "#111", color: "#fff", border: "none", borderRadius: "8px",
+    padding: "9px 18px", fontSize: "13px", fontWeight: "700", cursor: "pointer",
+  },
+  delBtn: {
+    background: "#fff1f2", border: "1px solid #fecdd3", borderRadius: "8px",
+    padding: "9px 14px", fontSize: "13px", fontWeight: "600", color: "#e11d48", cursor: "pointer",
+  },
+  delConfirmBtn: {
+    background: "#e11d48", color: "#fff", border: "none", borderRadius: "8px",
+    padding: "9px 16px", fontSize: "13px", fontWeight: "700", cursor: "pointer",
+  },
+  confirmBox: {
+    background: "#fff1f2", border: "1px solid #fecdd3", borderRadius: "10px",
+    padding: "14px", marginTop: "8px",
+  },
+};
+
+export default Seccion_1;

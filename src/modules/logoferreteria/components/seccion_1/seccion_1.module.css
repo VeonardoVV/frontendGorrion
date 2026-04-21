@@ -1,0 +1,182 @@
+/* contenedor principal */
+.seccion {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+/* =========================
+   BOTÓN SVG (opcional)
+========================= */
+.seccion svg {
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.seccion svg:hover {
+  transform: scale(1.1);
+}
+
+/* =========================
+   MODAL BACKGROUND
+========================= */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 999;
+}
+
+/* =========================
+   MODAL BOX
+========================= */
+.modal {
+  background: #ffffff;
+  width: 420px;
+  max-width: 90%;
+  padding: 20px;
+  border-radius: 12px;
+
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+/* animación suave */
+@keyframes fadeIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* =========================
+   TITULOS
+========================= */
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+/* =========================
+   SELECT
+========================= */
+.modal select {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+/* =========================
+   INPUTS
+========================= */
+.modal input[type="text"],
+.modal input[type="url"] {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+
+  border: 1px solid #ccc;
+  border-radius: 6px;
+
+  outline: none;
+}
+
+.modal input:focus {
+  border-color: #007bff;
+}
+
+/* =========================
+   BOTÓN FILE
+========================= */
+.modal button {
+  padding: 10px 12px;
+  margin-top: 10px;
+
+  border: none;
+  border-radius: 6px;
+
+  background: #007bff;
+  color: white;
+
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.modal button:hover {
+  background: #0056b3;
+}
+
+/* =========================
+   PREVIEW IMAGEN
+========================= */
+.modal img {
+  display: block;
+  margin-top: 10px;
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+/* =========================
+   MENSAJES
+========================= */
+.modal p {
+  margin: 10px 0;
+}
+
+/* éxito */
+.modal p:has(+ button) {
+  color: green;
+}
+
+/* error (si lo usas con clase mejor) */
+.error {
+  color: red;
+}
+
+/* =========================
+   GALERÍA DE IMÁGENES
+========================= */
+.seccion h2 {
+  margin-top: 20px;
+}
+
+.seccion h3 {
+  margin-top: 15px;
+}
+
+.seccion div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.seccion img {
+  border-radius: 8px;
+
+  object-fit: contain; /* no recorta */
+  
+  width: 150px;   /* 👈 tamaño fijo más pequeño */
+  height: auto;   /* mantiene proporción */
+
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.seccion img:hover {
+  transform: scale(1.05);
+}
