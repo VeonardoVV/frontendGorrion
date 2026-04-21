@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import styles from "./EditNavBar.module.css";
+import styles from "./editNavBar.module.css";
 import { supabase } from "../../../../../lib/supabase";
 
 const EditNavBar = () => {
