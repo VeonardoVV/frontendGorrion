@@ -10,6 +10,7 @@ import {
 
 import {
   Categoria,
+  obtenerCategoriaPorId,
   listarCategorias,
   getImagenCategoria,
   actualizarCategoriaPorId
@@ -17,6 +18,7 @@ import {
 
 import {
   Marca,
+  obtenerMarcaPorId,
   listarMarcas,
   getImagenMarca,
   actualizarMarcaPorId
@@ -84,6 +86,9 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
       setLoading(true);
 
       try {
+        ////////////////////////
+        /////// PRODUCTO ///////
+        ////////////////////////
         if (type === "producto") {
           const data = await obtenerProductoPorId(id);
 
@@ -107,22 +112,44 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
               getImagenMarca(data.marca?.marcaimgnombrebucket ?? "")
             );
           }
+          ////////////////////////
+          ////// CATEGORIA ///////
+          ////////////////////////
+          } else if (type === "categoria") {
+            const data = await obtenerCategoriaPorId(id);
 
-        } else if (type === "categoria") {
-          // 🔥 aquí deberías tener:
-          // const data = await obtenerCategoriaPorId(id);
-          console.log("Cargar categoría");
+            if (data) {
+              setCategoria({
+                ctgraid: data.ctgraid,
+                ctgraimgnombre: data.ctgraimgnombre,
+                ctgraimgnombrebucket: data.ctgraimgnombrebucket
+              });
 
-        } else if (type === "marca") {
-          // 🔥 aquí deberías tener:
-          // const data = await obtenerMarcaPorId(id);
-          console.log("Cargar marca");
-        }
+              setPreviewCategoria(getImagenCategoria(data.ctgraimgnombrebucket));
 
-      } catch (error) {
-        console.error("Error al cargar:", error);
-      } finally {
-        setLoading(false);
+            }
+          ////////////////////////
+          //////// MARCA /////////
+          ////////////////////////
+          } else if (type === "marca") {
+            const data = await obtenerMarcaPorId(id);
+
+            if (data) {
+              setMarca({
+                marcaid: data.marcaid,
+                marcaimgnombre: data.marcaimgnombre,
+                marcaimgnombrebucket: data.marcaimgnombrebucket
+              });
+
+              setPreviewMarca(getImagenMarca(data.marcaimgnombrebucket));
+
+            }
+          }
+
+        } catch (error) {
+          console.error("Error al cargar:", error);
+        } finally {
+          setLoading(false);
       }
     };
 
@@ -166,7 +193,7 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
   // ///////////////////////////   solo sirve para listar Marcas   ///////////////////////////////
   // /////////////////////////////////////////////////////////////////////////////////////////////
   const handleListarMarcas = async () => {
-    const data = await listarMarcas(1, 500);
+    const data = await listarMarcas();
     const mapped = data.map((m) => ({
       id:     m.marcaid,
       nombre: m.marcaimgnombre,
@@ -204,12 +231,36 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
       }
 
     } else if (type === "categoria") {
-      // 🔥 AQUÍ deberías usar actualizarCategoriaPorId (no producto)
-      console.log("Actualizar categoría");
+      const resultado = await actualizarCategoriaPorId(
+        id,
+        {
+          ctgraimgnombre: categoria.ctgraimgnombre
+        },
+        archivoImagen ?? undefined
+      );
+
+      if (resultado) {
+        alert("Categoria actualizado correctamente ✅");
+        onClose();
+      } else {
+        alert("Error al actualizar la categoria ❌");
+      }
 
     } else if (type === "marca") {
-      // 🔥 AQUÍ deberías usar actualizarMarcaPorId
-      console.log("Actualizar marca");
+      const resultado = await actualizarMarcaPorId(
+        id,
+        {
+          marcaimgnombre: marca.marcaimgnombre
+        },
+        archivoImagen ?? undefined
+      );
+
+      if (resultado) {
+        alert("Marca actualizado correctamente ✅");
+        onClose();
+      } else {
+        alert("Error al actualizar la Marca ❌");
+      }
     }
 
     setGuardando(false);
@@ -222,7 +273,9 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
 
-        {/* ── EDITAR PRODUCTO ── */}
+{/* ///////////////////////////////////////////////////////////////////////////////// */}
+{/* ////////////////////////////    PRODUCTO    ///////////////////////////////////// */}
+{/* ///////////////////////////////////////////////////////////////////////////////// */}
         {type === "producto" && esEdicion && (
           <div>
             <div className={styles.productoModal}>
@@ -307,11 +360,110 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
         <button onClick={handleActualizar} disabled={guardando}>
           {guardando ? "Guardando..." : "Actualizar"}
         </button>
+    
+
+{/* ///////////////////////////////////////////////////////////////////////////////// */}
+{/* ////////////////////////////    CATEGORIA    //////////////////////////////////// */}
+{/* ///////////////////////////////////////////////////////////////////////////////// */}
+        {type === "categoria" && esEdicion && (
+          <div>
+            <div className={styles.categoriaModal}>
+
+              {/* IZQUIERDA */}
+              <div className={styles.categoria}>
+                <h2><b>Editar Categoria</b></h2>
+
+                <p>Nombre del categoria</p>
+                <input
+                  type="text"
+                  value={categoria.ctgraimgnombre ?? ""}
+                  onChange={(e) =>
+                    setCategoria({ ...categoria, ctgraimgnombre: e.target.value })
+                  }
+                />
+
+                <label className={styles.btn}>
+                  Subir Imagen
+                  <input type="file" hidden onChange={handleImage} />
+                </label>
+
+                <div className={styles.mostrarImagen}>
+                  {previewCategoria ? (
+                    <img src={previewCategoria} alt="categoria" />
+                  ) : (
+                    "Imagen previa"
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── AGREGAR PRODUCTO ── */}
+        {type === "categoria" && !esEdicion && (
+          <h3>Momento de agregar una Categoria</h3>
+        )}
+
+        {/* ── BOTONES PRINCIPALES ── */}
+        <button onClick={onClose}>Cerrar</button>
+        <button onClick={handleActualizar} disabled={guardando}>
+          {guardando ? "Guardando..." : "Actualizar"}
+        </button>
+
+{/* ///////////////////////////////////////////////////////////////////////////////// */}
+{/* //////////////////////////////    MARCA    ////////////////////////////////////// */}
+{/* ///////////////////////////////////////////////////////////////////////////////// */}
+        {type === "marca" && esEdicion && (
+          <div>
+            <div className={styles.marcaModal}>
+
+              {/* IZQUIERDA */}
+              <div className={styles.marca}>
+                <h2><b>Editar Marca</b></h2>
+
+                <p>Nombre de la Marca</p>
+                <input
+                  type="text"
+                  value={marca.marcaimgnombre ?? ""}
+                  onChange={(e) =>
+                    setMarca({ ...marca, marcaimgnombre: e.target.value })
+                  }
+                />
+
+                <label className={styles.btn}>
+                  Subir Imagen
+                  <input type="file" hidden onChange={handleImage} />
+                </label>
+
+                <div className={styles.mostrarImagen}>
+                  {previewMarca ? (
+                    <img src={previewMarca} alt="marca" />
+                  ) : (
+                    "Imagen previa"
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── AGREGAR MARCA ── */}
+        {type === "marca" && !esEdicion && (
+          <h3>Momento de agregar una Marca</h3>
+        )}
+
+        {/* ── BOTONES PRINCIPALES ── */}
+        <button onClick={onClose}>Cerrar</button>
+        <button onClick={handleActualizar} disabled={guardando}>
+          {guardando ? "Guardando..." : "Actualizar"}
+        </button>
+        <div className={styles.modal} onClick={(e) => e.stopPropagation()}></div>
       </div>
 
-      {/* //////////////////////////////////////////////////////////////////////////*/}
-      {/* ── MODAL CATEGORÍAS ── ///////////////////////////////////////////////////*/}
-      {/* //////////////////////////////////////////////////////////////////////////*/}
+      // {/* //////////////////////////////////////////////////////////////////////////*/}
+      // {/* ── MODAL CATEGORÍAS ── ///////////////////////////////////////////////////*/}
+      // {/* //////////////////////////////////////////////////////////////////////////*/}
+      
       {openModalCategoria && (
         <div
           className={styles.ProductoModaCategoriaOverlay}
