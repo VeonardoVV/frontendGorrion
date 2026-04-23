@@ -479,6 +479,63 @@ export default function AdminPanel() {
             Editar Página
           </button>
         </div>
+
+        {/* ── Fila: toggle + búsqueda ── */}
+        <div className={styles.toggle_cajaBusqueda}>
+          {/* Toggle */}
+          <div
+            onClick={() => {
+              const nuevoEstado = !activo;
+              setActivo(nuevoEstado);
+
+              navigate("/home" + (nuevoEstado ? "?sinImagen=true" : ""));
+            }}
+            style={{
+              width: "52px",
+              height: "24px",
+              background: activo ? "#4ade80" : "#9DABB8",
+              borderRadius: "30px",
+              position: "relative",
+              cursor: "pointer",
+              transition: "background 0.3s",
+              flexShrink: 0,
+            }}
+          >
+            <div
+              style={{
+                width: "18px",
+                height: "18px",
+                background: "white",
+                borderRadius: "50%",
+                position: "absolute",
+                top: "3px",
+                left: activo ? "31px" : "3px",
+                transition: "left 0.3s",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+              }}
+            />
+          </div>
+
+          <p>Mostrar productos sin imágenes</p>
+
+          {/* Búsqueda */}
+          <input
+            type="text"
+            placeholder="Buscar..."
+            className={styles.search_input}
+            value={busqueda}
+            onChange={(e) => {
+              const valor = e.target.value;
+              setBusqueda(valor);
+
+              navigate(
+                "/home?" +
+                  (activo ? "sinImagen=true&" : "") +
+                  (valor ? `buscar=${encodeURIComponent(valor)}` : "")
+              );
+            }}
+          />
+        </div>
       </div>
 
       {/* Import Modal */}

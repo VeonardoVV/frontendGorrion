@@ -158,12 +158,61 @@ export const actualizarProductoPorId = async (
 
     return data as Producto;
 
-  } catch (err) {
+  } catch (err) { 
     console.error("Error general:", err);
     return null;
   }
 };
 
+
+//-----------------------------------------------------------------------------------
+//----    ---
+//-----------------------------------------------------------------------------------
+export const eliminarProductoPorId = async (id: number): Promise<boolean> => {
+  if (!id) return false;
+
+  try {
+    // 1. Primero obtenemos el producto para saber el nombre de la imagen
+    const { data: producto, error: fetchError } = await supabase
+      .from("producto")
+      .select("prdcimgnombrebucket")
+      .eq("prdcid", id)
+      .single();
+
+    if (fetchError || !producto) {
+      console.error("Error al obtener producto:", fetchError?.message);
+      return false;
+    }
+
+    const imagenPath = `producto/${producto.prdcimgnombrebucket}`;
+
+    // 2. Eliminamos la imagen del bucket
+    const { error: storageError } = await supabase.storage
+      .from("imagenes")
+      .remove([imagenPath]);
+
+    if (storageError) {
+      console.error("Error al eliminar imagen:", storageError.message);
+      return false;
+    }
+
+    // 3. Eliminamos el registro de la BD
+    const { error: deleteError } = await supabase
+      .from("producto")
+      .delete()
+      .eq("prdcid", id);
+
+    if (deleteError) {
+      console.error("Error al eliminar producto:", deleteError.message);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error("Error general:", err);
+    return false;
+  }
+};
 //-----------------------------------------------------------------------------------
 //----    ---
 //-----------------------------------------------------------------------------------
@@ -202,6 +251,7 @@ export const subirImagenProducto = async (file: File) => {
 
   return nombreArchivo; // 👈 esto guardas en BD
 };
+
 //-----------------------------------------------------------------------------------
 //----  construye la las url de los producto para que se pueda mostrar la imagen  ---
 //-----------------------------------------------------------------------------------

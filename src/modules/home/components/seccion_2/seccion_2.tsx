@@ -4,20 +4,20 @@ import Modal from "../../../../shared/components/Modal/Modal";
 import CrudModal from "../../../../shared/components/Modal/CrudModal";
 
 import {
-  Producto, getImagenProducto, 
+  Producto, getImagenProducto, eliminarProductoPorId, 
   listarProductoPaginacion
 
 } from "../../../../core/services/producto.service";
 
 import {
   Categoria,
-  listarCategoriasPaginacion,
+  listarCategoriasPaginacion,eliminarCategoriaPorId,
   getImagenCategoria
 } from "../../../../core/services/categoria.service";
 
 import {
   Marca,
-  listarMarcasPaginacion,
+  listarMarcasPaginacion,eliminarMarcaPorId,
   getImagenMarca
 } from "../../../../core/services/marca.service";
 
@@ -39,8 +39,51 @@ const Seccion_2 = () => {
     id: number;
     type: "producto" | "categoria" | "marca";
   } | null>(null);
-  const [idEliminar, setIdEliminar] = useState<number | null>(null);
+  
+  // --- aquies donde se recibe el id del registro y despues se elimina con todo imagen ese registro 
+  const handleEliminarProducto = async (id: number) => {
+    const confirmacion = window.confirm(
+      "⚠️ ¿Seguro que deseas eliminar este producto?\n\nEsta acción es IRREVERSIBLE."
+    );
 
+    if (!confirmacion) return;
+
+    const ok = await eliminarProductoPorId(id);
+
+    if (ok) {
+      setProductos(prev => prev.filter(p => p.prdcid !== id));
+    }
+  };
+
+  // --- aquies donde se recibe el id del registro y despues se elimina con todo imagen ese registro  de la categoria
+  const handleEliminarCategoria = async (id: number) => {
+    const confirmacion = window.confirm(
+      "⚠️ ¿Seguro que deseas eliminar este Categoria?\n\nEsta acción es IRREVERSIBLE."
+    );
+
+    if (!confirmacion) return;
+
+    const ok = await eliminarCategoriaPorId(id);
+
+    if (ok) {
+      setProductos(prev => prev.filter(p => p.ctgraid !== id));
+    }
+  };
+
+  // --- aquies donde se recibe el id del registro y despues se elimina con todo imagen ese registro  de la categoria
+  const handleEliminarMarca = async (id: number) => {
+    const confirmacion = window.confirm(
+      "⚠️ ¿Seguro que deseas eliminar esta Marca?\n\nEsta acción es IRREVERSIBLE."
+    );
+
+    if (!confirmacion) return;
+
+    const ok = await eliminarMarcaPorId(id);
+
+    if (ok) {
+      setProductos(prev => prev.filter(p => p.marcaid !== id));
+    }
+  };
 
   useEffect(() => {
     const loadData = async () => {
@@ -231,7 +274,7 @@ return (
                   >
                     Editar
                   </button>
-                  <button onClick={() => setIdEliminar(p.prdcid)}>
+                  <button onClick={() => handleEliminarProducto(p.prdcid)}>
                     Eliminar
                   </button>
                 </td>
@@ -262,7 +305,7 @@ return (
                   <button onClick={() => setIdEditando({ id: c.ctgraid, type: "categoria" })}>
                     Editar
                   </button>
-                  <button onClick={() => setIdEliminar(c.ctgraid)}>
+                  <button onClick={() => handleEliminarCategoria(c.ctgraid)}>
                     Eliminar
                   </button>
                 </td>
@@ -293,7 +336,7 @@ return (
                   <button onClick={() => setIdEditando({ id: m.marcaid, type: "marca" })}>
                     Editar
                   </button>
-                  <button onClick={() => setIdEliminar(m.marcaid)}>
+                  <button onClick={() => handleEliminarMarca(m.marcaid)}>
                     Eliminar
                   </button>
                 </td>

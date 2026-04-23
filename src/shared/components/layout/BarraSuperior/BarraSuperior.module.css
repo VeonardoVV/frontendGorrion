@@ -66,3 +66,53 @@ html, body {
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   transform: translateY(-2px);
 }
+
+/*-----------------------------------------------------------------------*/
+/* 0 - 768px */
+/* 📱 MOBILE FIRST */
+@media (max-width: 768px) {
+  .seccion {
+    flex-direction: column;
+    height: auto;
+    gap: 20px;
+    align-items: center;
+    text-align: center;
+  }
+
+  .imagenPanel {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  .imagenPanel img {
+    margin: 0;
+    width: 90%;
+    height: auto;
+  }
+
+
+  .PCM {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  .PCM1, .PCM2, .PCM3 {
+    width: 90%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .modal {
+    width: 60%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .modal {
+    width: 50%;
+  }
+}
