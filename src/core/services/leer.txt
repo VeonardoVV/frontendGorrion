@@ -1,11 +1,29 @@
 producto.service.ts
-    - listarProductosPaginacion // llamas a esta función y le puedes decir hasta donde va a listarte la primera pagina .. 
-    - listarProductos           // esta funcion lista todos los registros de la tabla producto(todos)
-    - obtenerProductoPorId      // se recepciona el id del producto y te saca los datos de todas sus columnas de la tabla producto
-    - actualizarProductoPorId   //
+    - listarProductoPaginacion
+    - listarProducto
+    - obtenerProductoPorId
+    - actualizarProductoPorId
     - eliminarProductoPorId
+    - eliminarImagenProducto
+    - subirImagenProducto
     - getImagenProducto
 
 categoria.service.ts
+    - listarCategoriasPaginacion
+    - listarCategorias
+    - obtenerCategoriaPorId      
+    - actualizarCategoriaPorId   
+    - eliminarCategoriaPorId     
+    - eliminarImagenCategoria    
+    - subirImagenCategoria       
+    - getImagenCategoria    
 
 marca.service.ts
+    - listarMarcasPaginacion
+    - listarMarcas
+    - obtenerMarcaPorId      
+    - actualizarMarcaPorId   
+    - eliminarMarcaPorId     
+    - eliminarImagenMarca    
+    - subirImagenMarca       
+    - getImagenMarca   

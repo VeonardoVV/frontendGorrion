@@ -10,6 +10,7 @@ import {
 } from "../../../core/services/producto.service";
 
 import {
+  Categoria,
   listarCategorias,
   getImagenCategoria,
 } from "../../../core/services/categoria.service";
@@ -17,7 +18,7 @@ import {
 import {
   Marca,
   listarMarcas,
-  getImagenMarca
+  getImagenMarca,
 } from "../../../core/services/marca.service";
 
 type Props = {
@@ -101,29 +102,6 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
     setPreviewProducto(URL.createObjectURL(file));
   };
 
-  const handleListarCategorias = async () => {
-    // listarCategorias() no recibe parámetros según tu service
-    const data = await listarCategorias();
-    const mapped = data.map((c: any) => ({
-      id:     c.ctgraid,
-      nombre: c.ctgraimgnombre,
-      url:    getImagenCategoria(c.ctgraimgnombrebucket),
-    }));
-    setImagenesCategoria(mapped);
-    setOpenModalCategoria(true);
-  };
-
-  const handleListarMarcas = async () => {
-    const data = await listarMarcas(1, 500);
-    const mapped = data.map((m) => ({
-      id:     m.marcaid,
-      nombre: m.marcaimgnombre,
-      url:    getImagenMarca(m.marcaimgnombrebucket),
-    }));
-    setImagenesMarca(mapped);
-    setOpenModalMarca(true);
-  };
-
   const handleActualizar = async () => {
     if (!id) return;
     setGuardando(true);
@@ -148,6 +126,36 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
       alert("Error al actualizar el producto ❌");
     }
   };
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+  // //////////////////////////////////   Categorias   ///////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+  const handleListarCategorias = async () => {
+    // listarCategorias() no recibe parámetros según tu service
+    const data = await listarCategorias();
+    const mapped = data.map((c: any) => ({
+      id:     c.ctgraid,
+      nombre: c.ctgraimgnombre,
+      url:    getImagenCategoria(c.ctgraimgnombrebucket),
+    }));
+    setImagenesCategoria(mapped);
+    setOpenModalCategoria(true);
+  };
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+  // //////////////////////////////////   Categorias   ///////////////////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+  const handleListarMarcas = async () => {
+    const data = await listarMarcas(1, 500);
+    const mapped = data.map((m) => ({
+      id:     m.marcaid,
+      nombre: m.marcaimgnombre,
+      url:    getImagenMarca(m.marcaimgnombrebucket),
+    }));
+    setImagenesMarca(mapped);
+    setOpenModalMarca(true);
+  };
+
 
   // ── Render ────────────────────────────────────────────────────
   if (loading) return <p>Cargando...</p>;
@@ -200,6 +208,13 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
               {/* DERECHA */}
               <div className={styles.CategoriaMarca}>
                 <p>CATEGORÍA:</p>
+                <input type="text" readOnly 
+                value={producto.prdcimgnombre ?? ""}
+                  onChange={(e) =>
+                    setProducto({ ...producto, prdcimgnombre: e.target.value })
+                  }
+                  />
+                
                 <button className={styles.btn} onClick={handleListarCategorias}>
                   Listar categoría
                 </button>
@@ -210,7 +225,7 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
                 </div>
 
                 <p>MARCA:</p>
-                <input type="text" no editable y que aparesca el  {marcaimgnombre} segun el nombre de la imagen  osea el nombre que esta en la imagen se ara una busqueda />
+                <input type="text" readOnly/>
                 <button className={styles.btn} onClick={handleListarMarcas}>
                   Listar marca
                 </button>
@@ -236,7 +251,9 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
         </button>
       </div>
 
-      {/* ── MODAL CATEGORÍAS ── */}
+      {/* //////////////////////////////////////////////////////////////////////////*/}
+      {/* ── MODAL CATEGORÍAS ── ///////////////////////////////////////////////////*/}
+      {/* //////////////////////////////////////////////////////////////////////////*/}
       {openModalCategoria && (
         <div
           className={styles.ProductoModaCategoriaOverlay}
@@ -282,7 +299,9 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
         </div>
       )}
 
-      {/* ── MODAL MARCAS ── */}
+      {/* //////////////////////////////////////////////////////////////////////////*/}
+      {/* ── MODAL MARCAS ── ///////////////////////////////////////////////////////*/}
+      {/* //////////////////////////////////////////////////////////////////////////*/}
       {openModalMarca && (
         <div
           className={styles.ProductoModaCategoriaOverlay}

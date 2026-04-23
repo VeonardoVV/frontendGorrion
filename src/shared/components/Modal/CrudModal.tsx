@@ -6,18 +6,20 @@ import {
   obtenerProductoPorId,
   getImagenProducto,
   actualizarProductoPorId,
-  subirImagenProducto,
 } from "../../../core/services/producto.service";
 
 import {
+  Categoria,
   listarCategorias,
   getImagenCategoria,
+  actualizarCategoriaPorId
 } from "../../../core/services/categoria.service";
 
 import {
   Marca,
   listarMarcas,
   getImagenMarca,
+  actualizarMarcaPorId
 } from "../../../core/services/marca.service";
 
 type Props = {
@@ -53,6 +55,18 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
     categoria: null,
     marca: null,
   });
+  
+  const [categoria, setCategoria] = useState<Categoria>({
+    ctgraid: 0,
+    ctgraimgnombre: "",
+    ctgraimgnombrebucket: ""
+  });
+
+  const [marca, setMarca] = useState<Marca>({
+    marcaid: 0,
+    marcaimgnombre: "",
+    marcaimgnombrebucket: ""
+  });
 
   const esEdicion = !!id;
   const [loading,   setLoading]   = useState(false);
@@ -69,38 +83,73 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
       if (!id) return;
       setLoading(true);
 
-      const data = await obtenerProductoPorId(id);
-      if (data) {
-        setProducto({
-          prdcid:                data.prdcid,
-          prdcimgnombre:         data.prdcimgnombre,
-          prdcimgnombrebucket:   data.prdcimgnombrebucket,
-          prdcprecio:            data.prdcprecio,
-          ctgraid:               data.ctgraid,
-          marcaid:               data.marcaid,
-          categoria:             data.categoria,
-          marca:                 data.marca,
-        });
+      try {
+        if (type === "producto") {
+          const data = await obtenerProductoPorId(id);
 
-        setPreviewProducto(getImagenProducto(data.prdcimgnombrebucket));
-        setPreviewCategoria(getImagenCategoria(data.categoria?.ctgraimgnombrebucket ?? ""));
-        setPreviewMarca(getImagenMarca(data.marca?.marcaimgnombrebucket ?? ""));
+          if (data) {
+            setProducto({
+              prdcid: data.prdcid,
+              prdcimgnombre: data.prdcimgnombre,
+              prdcimgnombrebucket: data.prdcimgnombrebucket,
+              prdcprecio: data.prdcprecio,
+              ctgraid: data.ctgraid,
+              marcaid: data.marcaid,
+              categoria: data.categoria,
+              marca: data.marca,
+            });
+
+            setPreviewProducto(getImagenProducto(data.prdcimgnombrebucket));
+            setPreviewCategoria(
+              getImagenCategoria(data.categoria?.ctgraimgnombrebucket ?? "")
+            );
+            setPreviewMarca(
+              getImagenMarca(data.marca?.marcaimgnombrebucket ?? "")
+            );
+          }
+
+        } else if (type === "categoria") {
+          // 🔥 aquí deberías tener:
+          // const data = await obtenerCategoriaPorId(id);
+          console.log("Cargar categoría");
+
+        } else if (type === "marca") {
+          // 🔥 aquí deberías tener:
+          // const data = await obtenerMarcaPorId(id);
+          console.log("Cargar marca");
+        }
+
+      } catch (error) {
+        console.error("Error al cargar:", error);
+      } finally {
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     cargar();
   }, [id, type]);
 
-  // ── Handlers ──────────────────────────────────────────────────
-  const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setArchivoImagen(file);
-    setPreviewProducto(URL.createObjectURL(file));
-  };
+  // ── Handlers en aqui muestrala imagen y sube al bucket  ─────────────────────────────────────────
+const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
+  const url = URL.createObjectURL(file);
+
+  setArchivoImagen(file);
+
+  if (type === "producto") {
+    setPreviewProducto(url);
+  } else if (type === "categoria") {
+    setPreviewCategoria(url);
+  } else if (type === "marca") {
+    setPreviewMarca(url);
+  }
+};
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+  // //////////////////////////   solo sirve para listar Categorias   ////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////
   const handleListarCategorias = async () => {
     // listarCategorias() no recibe parámetros según tu service
     const data = await listarCategorias();
@@ -113,6 +162,9 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
     setOpenModalCategoria(true);
   };
 
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+  // ///////////////////////////   solo sirve para listar Marcas   ///////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////
   const handleListarMarcas = async () => {
     const data = await listarMarcas(1, 500);
     const mapped = data.map((m) => ({
@@ -124,32 +176,46 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
     setOpenModalMarca(true);
   };
 
+
+  // /////////////////////////////////////////////////////////////////////////////////////////////
+  // ///////////////////////   actualiza Producto,Categoria y Marca   ////////////////////////////
+  // /////////////////////////////////////////////////////////////////////////////////////////////
   const handleActualizar = async () => {
     if (!id) return;
     setGuardando(true);
 
-    const resultado = await actualizarProductoPorId(
-      id,
-      {
-        prdcimgnombre:       producto.prdcimgnombre,
-        prdcprecio:          producto.prdcprecio,
-        ctgraid:             producto.ctgraid,
-        marcaid:             producto.marcaid,
-      },
-      archivoImagen ?? undefined   // nueva imagen solo si el usuario la cambió
-    );
+    if (type === "producto") {
+      const resultado = await actualizarProductoPorId(
+        id,
+        {
+          prdcimgnombre: producto.prdcimgnombre,
+          prdcprecio: producto.prdcprecio,
+          ctgraid: producto.ctgraid,
+          marcaid: producto.marcaid,
+        },
+        archivoImagen ?? undefined
+      );
+
+      if (resultado) {
+        alert("Producto actualizado correctamente ✅");
+        onClose();
+      } else {
+        alert("Error al actualizar el producto ❌");
+      }
+
+    } else if (type === "categoria") {
+      // 🔥 AQUÍ deberías usar actualizarCategoriaPorId (no producto)
+      console.log("Actualizar categoría");
+
+    } else if (type === "marca") {
+      // 🔥 AQUÍ deberías usar actualizarMarcaPorId
+      console.log("Actualizar marca");
+    }
 
     setGuardando(false);
-
-    if (resultado) {
-      alert("Producto actualizado correctamente ✅");
-      onClose();
-    } else {
-      alert("Error al actualizar el producto ❌");
-    }
   };
 
-  // ── Render ────────────────────────────────────────────────────
+  // ── Render mientras que no carge ,  aparecera esto por el momento────────────────────────────────────────────────────
   if (loading) return <p>Cargando...</p>;
 
   return (
@@ -243,7 +309,9 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
         </button>
       </div>
 
-      {/* ── MODAL CATEGORÍAS ── */}
+      {/* //////////////////////////////////////////////////////////////////////////*/}
+      {/* ── MODAL CATEGORÍAS ── ///////////////////////////////////////////////////*/}
+      {/* //////////////////////////////////////////////////////////////////////////*/}
       {openModalCategoria && (
         <div
           className={styles.ProductoModaCategoriaOverlay}
@@ -289,7 +357,9 @@ const CrudModal: React.FC<Props> = ({ id, type, onClose }) => {
         </div>
       )}
 
-      {/* ── MODAL MARCAS ── */}
+      {/* //////////////////////////////////////////////////////////////////////////*/}
+      {/* ── MODAL MARCAS ── ///////////////////////////////////////////////////////*/}
+      {/* //////////////////////////////////////////////////////////////////////////*/}
       {openModalMarca && (
         <div
           className={styles.ProductoModaCategoriaOverlay}
