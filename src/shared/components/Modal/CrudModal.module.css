@@ -1,4 +1,5 @@
 .overlay {
+  
   position: fixed;
   top: 0;
   left: 0;
@@ -21,53 +22,75 @@
   border-radius: 10px;
   width: 90%;
   max-width: 800px;
+
+  max-height: 100%;
+  overflow-y: auto; /* 🔥 scroll interno */
 }
 
 .producto input {
   width: 100%;
 }
 
-/* IMAGEN */
-.mostrarCajaImgProducto {
-  width: 200px;
+/* /////////////// */
+/* ////IMAGEN //// */
+/* /////////////// */
+
+/* img PRODUCTO */
+.mostrarImagenProducto {
+  margin-left: 10px;
+  height: 350px;
+  border: 2px dashed #bbb;
+  border-radius: 10px;
+  color: #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  margin-top: 10px;
+}
+.mostrarImagen img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* 🔥 LA CLAVE */
+}
+
+/* img CATEGORIA */
+.mostrarImagenCategoria{
+  margin-left: 10px;
+  height: 250px;
+  border: 2px dashed #bbb ;
+  border-radius: 10px;
+  color: #bbb;
+  justify-content: center;
+  display: flex;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  margin-top: 10px;
+}
+.mostrarImagenCategoria img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* 🔥 LA CLAVE */
+}
+
+/* img MARCA */
+.mostrarImagenMarca {
+  margin-left: 10px;
   height: 250px;
   border: 2px dashed #bbb;
   border-radius: 10px;
   color: #bbb;
-
   display: flex;
-  align-items: center;
   justify-content: center;
-
-  overflow: hidden;
+  align-items: center; /* 🔥 centra verticalmente */
+  padding: 10px;
+  overflow: hidden; /* opcional */
   margin-top: 10px;
 }
-
-.mostrarCajaImgCategoria{
-  border: 1px dashed #bbb ;
-  border-radius: 10px;
-
-  color: #bbb;
-  justify-content: center;
-  display: flex;
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-.mostrarCajaImgMarca{
-  border: 1px dashed #bbb ;
-  border-radius: 10px;
-  color: #bbb;
-  justify-content: center;
-  display: flex;
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-.mostrarImagen img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.mostrarImagenMarca img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* 🔥 LA CLAVE */
 }
 
 p {
@@ -78,20 +101,38 @@ p {
 /* --------------------------------------------------------------------------------------------------------- */
 /* -----------------------------------CARD PRODUCTO-------------------------------------------------------- */
 /* --------------------------------------------------------------------------------------------------------- */
-
-
 .productoModal {
   display: flex;
+  flex-wrap: wrap;
   gap: 40px;
   align-items: flex-start;
+
 }
+
+/* 🔥 título arriba centrado */
+.productoModal h2 {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+/* 🔥 título centrado REAL */
+.tituloModal {
+  width: 100%;
+  text-align: center;
+  border-bottom: 2px solid black;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
+}
+
+
 
 /* IZQUIERDA */
 .producto {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: 50%;
+  width: 40%;
 }
 
 /* DERECHA */
@@ -105,14 +146,15 @@ p {
 /* TEXTOS */
 .producto h2 {
   margin-bottom: 10px;
+  border-bottom: 2px solid black; /* 🔥 la rayita */
+  padding-bottom: 5px; /* espacio entre texto y línea */
 }
-
 
 
 /* BOTÓN SUBIR */
 .btn {
   display: inline-block;
-  padding: 6px 10px;
+    padding: 8px 15px;
   background: #333;
   color: white;
   cursor: pointer;
@@ -124,6 +166,17 @@ p {
 .Cerrar {
   margin-top: 20px;
   background-color: rgba(236, 56, 56, 0.8);
+  border: none;
+  border-radius: 10px;
+  padding: 8px 15px;
+  cursor: pointer;
+  color: white;
+}
+
+/* BOTÓN Actualizar */
+.btnActualizar {
+  margin-top: 20px;
+  background-color: rgb(21, 153, 9);
   border: none;
   border-radius: 10px;
   padding: 8px 15px;

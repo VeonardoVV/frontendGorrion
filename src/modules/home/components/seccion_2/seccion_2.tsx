@@ -24,6 +24,9 @@ import {
 
 
 const Seccion_2 = () => {
+  // busqueda en mis tablas con toda la paginacion
+  const [busqueda, setBusqueda] = useState("");
+  
   const [vista, setVista] = useState<"producto" | "categoria" | "marca">("producto");
 
   const [productos, setProductos] = useState<Producto[]>([]);
@@ -168,12 +171,12 @@ return (
     )}
 
     {/* PAGINACIÓN */}
-    <div style={{ marginTop: "20px" }}>
+    <div className={styles.pagination}>
       <button onClick={() => setPagina(pagina - 1)} disabled={pagina === 1}>
         Anterior
       </button>
 
-      <span style={{ margin: "0 10px" }}>Página {pagina}</span>
+      <span className={styles.pageInfo}>Página {pagina}</span>
 
       <button
         onClick={() => setPagina(pagina + 1)}
@@ -267,16 +270,18 @@ return (
                 </td>
 
                 <td>
-                  <button
-                    onClick={() =>
-                      setIdEditando({ id: p.prdcid, type: "producto" })
-                    }
-                  >
-                    Editar
-                  </button>
-                  <button onClick={() => handleEliminarProducto(p.prdcid)}>
-                    Eliminar
-                  </button>
+                  <div className={styles.acciones}>
+                    <button
+                      className={styles.btnEditar}
+                      onClick={() => setIdEditando({ id: p.prdcid, type: "producto" })}>
+                      Editar
+                    </button>
+                    <button
+                      className={styles.btnEliminar}
+                      onClick={() => handleEliminarProducto(p.prdcid)}>
+                      Eliminar
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -302,12 +307,20 @@ return (
                   )}
                 </td>
                 <td>
-                  <button onClick={() => setIdEditando({ id: c.ctgraid, type: "categoria" })}>
-                    Editar
-                  </button>
-                  <button onClick={() => handleEliminarCategoria(c.ctgraid)}>
-                    Eliminar
-                  </button>
+                  <div className={styles.acciones}>
+                    <button 
+                      className={styles.btnEditar}
+                      onClick={() => setIdEditando({ id: c.ctgraid, type: "categoria" })}>
+                      Editar
+                    </button>
+                    
+                    <button
+                      className={styles.btnEliminar}
+                      onClick={() => handleEliminarCategoria(c.ctgraid)}>
+                      Eliminar
+                    </button>
+                  </div>
+
                 </td>
               </tr>
             ))}
@@ -333,12 +346,20 @@ return (
                   )}
                 </td>
                 <td>
-                  <button onClick={() => setIdEditando({ id: m.marcaid, type: "marca" })}>
-                    Editar
-                  </button>
-                  <button onClick={() => handleEliminarMarca(m.marcaid)}>
-                    Eliminar
-                  </button>
+                  <div className={styles.acciones}>
+                    <button
+                      className={styles.btnEditar}
+                      onClick={() => setIdEditando({ id: m.marcaid, type: "marca" })}>
+                      Editar
+                    </button>
+                    
+                    <button
+                      className={styles.btnEliminar}
+                      onClick={() => handleEliminarMarca(m.marcaid)}>
+                      Eliminar
+                    </button>
+                  </div>
+
                 </td>
               </tr>
             ))}

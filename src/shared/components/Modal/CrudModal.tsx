@@ -279,53 +279,47 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
         {type === "producto" && esEdicion && (
           <div>
             <div className={styles.productoModal}>
+              
+              <h2><b>Editar Producto</b></h2>
 
               {/* IZQUIERDA */}
               <div className={styles.producto}>
-                <h2><b>Editar Producto</b></h2>
-
                 <p>Nombre del producto</p>
                 <input
                   type="text"
                   value={producto.prdcimgnombre ?? ""}
-                  onChange={(e) =>
-                    setProducto({ ...producto, prdcimgnombre: e.target.value })
-                  }
-                />
+                  onChange={(e) => setProducto({ ...producto, prdcimgnombre: e.target.value })}/>
 
                 <label className={styles.btn}>
                   Subir Imagen
                   <input type="file" hidden onChange={handleImage} />
                 </label>
 
-                <div className={styles.mostrarImagen}>
+                <div className={styles.mostrarImagenProducto}>
                   {previewProducto ? (
                     <img src={previewProducto} alt="producto" />
                   ) : (
                     "Imagen previa"
                   )}
                 </div>
-
                 <p>PRECIO:</p>
                 <input
                   type="number"
                   value={producto.prdcprecio}
-                  onChange={(e) =>
-                    setProducto({ ...producto, prdcprecio: Number(e.target.value) })
-                  }
-                />
+                  onChange={(e) => setProducto({ ...producto, prdcprecio: Number(e.target.value) })}/>
+
+
+
               </div>
 
               {/* DERECHA */}
               <div className={styles.CategoriaMarca}>
+
                 <p>CATEGORÍA:</p>
-                <input type="text" readOnly 
-                value={producto.prdcimgnombre ?? ""}
-                  onChange={(e) =>
-                    setProducto({ ...producto, prdcimgnombre: e.target.value })
-                  }
-                  />
-                
+                {/* <input type="text" readOnly 
+                  value={producto.prdcimgnombre ?? ""}
+                  onChange={(e) => setProducto({ ...producto, prdcimgnombre: e.target.value })}/>
+                 */}
                 <button className={styles.btn} onClick={handleListarCategorias}>
                   Listar categoría
                 </button>
@@ -336,7 +330,7 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
                 </div>
 
                 <p>MARCA:</p>
-                <input type="text" readOnly/>
+                {/* <input type="text" readOnly/> */}
                 <button className={styles.btn} onClick={handleListarMarcas}>
                   Listar marca
                 </button>
@@ -354,13 +348,6 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
         {type === "producto" && !esEdicion && (
           <h3>Momento de agregar un producto</h3>
         )}
-
-        {/* ── BOTONES PRINCIPALES ── */}
-        <button onClick={onClose}>Cerrar</button>
-        <button onClick={handleActualizar} disabled={guardando}>
-          {guardando ? "Guardando..." : "Actualizar"}
-        </button>
-    
 
 {/* ///////////////////////////////////////////////////////////////////////////////// */}
 {/* ////////////////////////////    CATEGORIA    //////////////////////////////////// */}
@@ -387,7 +374,7 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
                   <input type="file" hidden onChange={handleImage} />
                 </label>
 
-                <div className={styles.mostrarImagen}>
+                <div className={styles.mostrarImagenCategoria}>
                   {previewCategoria ? (
                     <img src={previewCategoria} alt="categoria" />
                   ) : (
@@ -403,12 +390,6 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
         {type === "categoria" && !esEdicion && (
           <h3>Momento de agregar una Categoria</h3>
         )}
-
-        {/* ── BOTONES PRINCIPALES ── */}
-        <button onClick={onClose}>Cerrar</button>
-        <button onClick={handleActualizar} disabled={guardando}>
-          {guardando ? "Guardando..." : "Actualizar"}
-        </button>
 
 {/* ///////////////////////////////////////////////////////////////////////////////// */}
 {/* //////////////////////////////    MARCA    ////////////////////////////////////// */}
@@ -435,7 +416,7 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
                   <input type="file" hidden onChange={handleImage} />
                 </label>
 
-                <div className={styles.mostrarImagen}>
+                <div className={styles.mostrarImagenMarca}>
                   {previewMarca ? (
                     <img src={previewMarca} alt="marca" />
                   ) : (
@@ -453,8 +434,8 @@ const handleImage = (e: React.ChangeEvent<HTMLInputElement>) => {
         )}
 
         {/* ── BOTONES PRINCIPALES ── */}
-        <button onClick={onClose}>Cerrar</button>
-        <button onClick={handleActualizar} disabled={guardando}>
+        <button className={styles.btn} onClick={onClose}>Cerrar</button>
+        <button className={styles.btnActualizar} onClick={handleActualizar} disabled={guardando}>
           {guardando ? "Guardando..." : "Actualizar"}
         </button>
         <div className={styles.modal} onClick={(e) => e.stopPropagation()}></div>

@@ -120,36 +120,6 @@ td:last-child {
   font-style: italic;
 }
 
-/* Botones de acción */
-.EditarEliminar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.btnAccion {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.15s ease;
-}
-.btn {
-  background-color: #2c6fbd;
-  border-radius: 10px;
-  padding: 5px;
-  gap: 5px;
-}
-
-.btnAccion:hover {
-  transform: scale(1.1);
-}
-
 .iconoEditar {
   background-color: #e8f4ff;
   fill: #2c7be5;
@@ -236,6 +206,83 @@ td:last-child {
   font-size: 13px;
   color: #2c3e50;
 }
+
+/* BOTÓN CERRAR */
+.btnEliminar {
+  margin-top: 20px;
+  background-color: rgba(185, 9, 9, 0.8);
+  border: none;
+  border-radius: 10px;
+  padding: 8px 15px;
+  cursor: pointer;  
+  color: white;
+}
+
+/* BOTÓN Actualizar */
+.btnEditar {
+  margin-top: 20px;
+  background-color: rgb(190, 108, 1);
+  border: none;
+  border-radius: 10px;
+  padding: 8px 15px;
+  cursor: pointer;
+  color: white;
+}
+
+.acciones {
+  display: flex;
+  justify-content: center;  /* 🔥 centra horizontal */
+  align-items: center;      /* 🔥 centra vertical */
+  gap: 10px;
+}
+
+td:last-child,
+th:last-child {
+  text-align: center;
+}
+
+
+/* paginacion */
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+}
+
+/* Botones */
+.pagination button {
+  background-color: #2c6fbd;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+/* Hover */
+.pagination button:hover:not(:disabled) {
+  background-color: #1f5aa0;
+  transform: translateY(-1px);
+}
+
+/* Deshabilitado */
+.pagination button:disabled {
+  background-color: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Texto página */
+.pageInfo {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+}
+
 /*responsiveeeeeee celular tablet pc etc*/
 @media (max-width: 768px) {
 
@@ -307,3 +354,4 @@ td:last-child {
     width: 50%;
   }
 }
+
